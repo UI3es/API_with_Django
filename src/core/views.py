@@ -4,18 +4,21 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .serializers import PostSerializer
+from .models import Post
+
 
 class TestView(APIView):
     def get(self, request, *args, **kwargs):
-        data = {
-            'name': 'Vladislav',
-            'age': 22
-        }
-        return Response(data)
+        query_set = Post.objects.all()
+        post = query_set.first()
+        # serializer = PostSerializer(query_set, many=True)
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
 
-# def test_view(request):
-#     data = {
-#         'name': 'Vladislav',
-#         'age': 22
-#     }
-#     return JsonResponse(data)
+    def post(self, request, *args, **kwargs):
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
